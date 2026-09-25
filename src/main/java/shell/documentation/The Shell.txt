@@ -1,0 +1,35 @@
+A shell is a piece of software that acts as a bridge between the user and the operating system's kernel.
+
+A shell's lifecycle, "REPL" (Read, Eval, Print, Loop):
+* Read (The Prompt):
+    The shell prints a prompt string (like $ or >) and waits for the user to type.
+    It captures the raw string of text until the user hits Enter.
+    It also listens for system signals, like Ctrl+C to interrupt a process.
+
+* Tokenization (Lexing):
+    The shell takes the raw string and chops it into "tokens".
+    It handles quotes, escaping, and spaces.
+
+* Parsing (Syntax Analysis):
+    The shell analyzes the tokens to understand the grammatical structure.
+    It identifies that | means piping data between two processes, and > means redirecting output to a file.
+    It builds an Abstract Syntax Tree (AST) - a data structure representing the logical execution order.
+
+* Evaluation & Execution:
+    The shell decides how to run the command.
+    * Built-ins:
+        Some commands must be executed by the shell itself (e.g., cd, exit).
+    * External Commands:
+        If it's not a built-ind, the shell searches the OS PATH environment variable to find the executable.
+        It asks the OS to spawn a new child process.
+    * Plumbing (Pipes and Redirects):
+        Before launching the processes, the shell wires up the input and output streams.
+        It connects the stdout of the first command to the stdin of the next.
+
+* Print:
+    The shell waits for the child process to finish (or runs it in the background if the user appended &),
+    captures the exit code (0 for success, >0 for errors),
+    and prints any final output to the terminal screen.
+
+* Loop:
+    The shell resets its state, prints the prompt again, and waits for the next command.
