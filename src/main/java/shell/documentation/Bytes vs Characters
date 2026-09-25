@@ -65,38 +65,3 @@ Layer 3: BufferedReader (The Optimizer & Line Reader)
         and stores them in its array until it detects a newline character (\n or \r\n).
         Once it sees the newline, it takes the chunk of characters from its array,
         packages them into a single String, and hands it back.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -33,3 +33,67 @@ A shell's lifecycle, "REPL" (Read, Eval, Print, Loop):
 
 * Loop:
     The shell resets its state, prints the prompt again, and waits for the next command.
+
+------------
+
+Starting the shell:
+
+1. Initialize ShellContext:
+    Capture the OS environment variables,
+    set up the initial working directory, and instantiate the mutable maps.
+
+2. Trigger @Command Registry Scan:
+    User reflection to scan the classpath, identify all classes annotated with @Command,
+    instantiate them, and map their execution triggers (e.g., "cd", "ls", "echo") to the instantiated objects.
+
+3. Start the REPL Loop:
+    Begin the while(isRunning) loop that reads standard input,
+    evaluates the input against the command registry, prints the result and loops again.
+
+------------
+
+
+POSIX signals:
+
+When a user presses Ctrl+C in a terminal, the OS sends a SIGINT (interrupt) signal to the foreground process.
+by default, the JVM intercepts this signal and initiates a graceful shutdown,
+    triggering any registered shutdown hook before terminating the process.
+
+I want Ctrl+C to interrupt the current typed command, not kill the entire shell.
+
+Here is the API map and syntax to override this behavior using the sun.misc package.
+
+The API resolves around two core components:
+* sun.misc.Signal:
+    An object representing a specific OS signal.
+    I instantiate it with the signal's standard POSIX string name (without the "SIG" PREFIX),
+        SUCH AS "int", "TERM", or "HUP".
+* sun.misc.SignalHandler:
+    An interface with a single handle(Signal sig) method.
+    It dictates what the JVM should do when the specified signal is received.
+
+The Signal class provides a static method handle(Signal SignalHandler) to register the custom behavior.
+
+The SignalHandler interface provides two static,
+pre-defined handlers mapping directly to standard OS-level signal dispositions:
+
+* SignalHandler.SIG_IGN (Ignore):
+    Instruct the JVM to completely discard the signal.
+    The signal is dropped at the native layer, and no Java code is executed in response.
+* SignalHandler.SIG_DFL (Default):
+    Restores the JVM's default signal handler.
+    For SIGINT, this means restoring the JVM shutdown sequence.
+
+The Syntax:
+To prevent Ctrl+C from terminating my Java shell, I register the ignore handler at the start of my application.
+
+---
+import sun.misc.Signal;
+import sun.misc.SignalHanlder;
+
+Signal.handle(new signal("INT", SignalHandler.SIG_IGN);
+---
+
+By executing this single line, I'm overwriting the JVM's internal native signal handler for SIGINT.
+When the OS delivers the interrupt, the JVM sees that SIG_IGN is registered and swallows the signal.
+The JVM's shutdown sequence is never triggered, keeping my REPL alive.
